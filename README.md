@@ -1,6 +1,6 @@
 **Machine-Learning-for-Stroke**
 
-This repository contains various machine learning models trained on a stroke dataset using Caret in R. The repository also contains an interactive screening to developed by shiny to assess individuals who are at risk of developing stroke
+This repository contains a collection of machine learning models developed using the caret package in R, all trained on a stroke dataset to predict the likelihood of stroke occurrence. In addition to the model training scripts, the repository includes an interactive stroke risk screening tool built with Shiny. This user-friendly web application allows individuals to input relevant health and lifestyle information to assess their risk of developing a stroke. The tool is designed to support early detection and personalized prevention strategies by leveraging the predictive capabilities of the trained machine learning models.
 
 **Study Objective**
 
