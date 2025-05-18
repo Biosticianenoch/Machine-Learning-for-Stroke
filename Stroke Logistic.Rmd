@@ -1,0 +1,148 @@
+---
+title: "STROKE PREDICTION & PROGNOSIS - LOGISTIC"
+author: "Enock Bereka"
+date: "2025-05-17"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load necessary libraries
+```{r message=FALSE, warning=FALSE}
+library(Boruta)
+library(tidyverse)
+library(caret)
+library(pROC)
+library(caTools)
+```
+
+## Setting working directory
+```{r message=FALSE, warning=FALSE}
+setwd("C:/Users/DELL/Desktop/Stroke/")
+```
+
+## Load the dataset
+```{r message=FALSE, warning=FALSE}
+data = read_csv("Stroke.csv")
+```
+
+## Assess the structure of the dataset
+```{r message=FALSE, warning=FALSE}
+glimpse(data)
+```
+
+## Checking for missing values
+```{r message=FALSE, warning=FALSE}
+anyNA(data)
+```
+
+## Checking for duplicates
+```{r message=FALSE, warning=FALSE}
+sum(duplicated(data))
+```
+
+## Data Preprocessing
+## Label encoding
+```{r message=FALSE, warning=FALSE}
+categorical_vars = c("gender", "ever_married", "Residence_type","work_type", "smoking_status")
+data = data %>% mutate(across(all_of(categorical_vars), ~as.numeric(as.factor(.))-1))
+```
+
+## Convert categorical variables to factors
+```{r message=FALSE, warning=FALSE}
+data[categorical_vars] = lapply(data[categorical_vars], as.factor)
+```
+
+## Convert BMI to numeric
+```{r message=FALSE, warning=FALSE}
+data$bmi = as.numeric(data$bmi)
+```
+
+## Remove NAs in BMI
+```{r message=FALSE, warning=FALSE}
+data = drop_na(data)
+```
+
+## Remove unnecessary columns
+```{r message=FALSE, warning=FALSE}
+data$id = NULL
+```
+
+## Convert stroke to binary
+```{r message=FALSE, warning=FALSE}
+data$stroke = ifelse(data$stroke == 1, "Yes", "No")
+data$stroke = as.factor(data$stroke)
+```
+
+## Checking the distribution of the study outcome
+```{r message=FALSE, warning=FALSE}
+table(data$stroke)
+```
+
+## Handling Class imbalance
+## Apply downsampling of the majority class
+```{r message=FALSE, warning=FALSE}
+data = downSample(x = data[, -11], y = data$stroke)
+table(data$Class)
+```
+
+## Feature importance analysis
+```{r message=FALSE, warning=FALSE}
+boruta_results = Boruta(Class~., data)
+print(boruta_results)
+```
+
+## Check only the confirmed attributes
+```{r message=FALSE, warning=FALSE}
+getSelectedAttributes(boruta_results, withTentative = T)
+```
+
+## Remove the rejected attributes
+```{r message=FALSE, warning=FALSE}
+data$gender = NULL
+data$Residence_type = NULL
+```
+
+## Splitting the data into training and testing sets
+```{r message=FALSE, warning=FALSE}
+index = sample.split(data$Class, SplitRatio = 0.8)
+trainData = subset(data, index == "TRUE")
+testData = subset(data, index == "FALSE")
+table(trainData$Class)
+table(testData$Class)
+```
+
+## Prepare a training scheme
+```{r message=FALSE, warning=FALSE}
+fitControl = trainControl(method = "repeatedcv",
+                          number = 10,
+                          repeats = 4,
+                          classProbs = TRUE,
+                          summaryFunction = twoClassSummary)
+```
+
+## Train the Logistic Regression Model
+```{r message=FALSE, warning=FALSE} 
+model = train(Class~.,
+              trainData,
+              method = "glm",
+              metric = "ROC",
+              preProces = c("center", "scale"),
+              trControl = fitControl)
+```
+
+## Make predictions
+```{r message=FALSE, warning=FALSE}
+model_pred = predict(model, testData)
+cm = confusionMatrix(model_pred, testData$Class, positive = "Yes")
+cm
+```
+
+## ROC curve 
+```{r message=FALSE, warning=FALSE}
+pred =  predict(model, testData, type = "prob")
+roc(testData$Class , pred$Yes)
+```
+
