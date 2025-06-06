@@ -1,9 +1,13 @@
-🧠 Machine Learning for Stroke Risk Prediction
+**🧠 Machine Learning for Stroke Risk Prediction**
+
 A full-stack data science solution integrating machine learning, feature engineering, model evaluation, and an interactive Shiny web app for real-time stroke risk assessment. This project leverages R’s caret, Boruta, and Shiny packages to build interpretable and robust models applicable to real-world healthcare decision-making.
 
-💡 Objective: To predict stroke occurrence using patient health and demographic data, enabling early detection and supporting personalized preventive strategies in clinical environments.
+**💡 Objective**
 
-📊 Overview
+To predict stroke occurrence using patient health and demographic data, enabling early detection and supporting personalized preventive strategies in clinical environments.
+
+**📊 Overview**
+
 Language & Tools: R, Shiny, caret, Boruta, pROC, caTools, RandomForest
 
 ML Techniques: Logistic Regression, Random Forest, SVM, Decision Trees, KNN, GBM
@@ -14,7 +18,7 @@ Feature Selection: Boruta wrapper over Random Forest
 
 Deployment: Shiny web application for interactive risk screening
 
-📁 Project Structure
+**📁 Project Structure**
 bash
 Copy
 Edit
@@ -32,7 +36,7 @@ Machine-Learning-for-Stroke/
 
 🎯 Target: Binary classification (stroke: Yes/No)
 
-🔍 Exploratory Data Analysis (EDA)
+**🔍 Exploratory Data Analysis (EDA)**
 Checked structure and types using glimpse()
 
 Verified and handled missing values (bmi column cleaned)
@@ -41,7 +45,8 @@ Removed duplicates and the non-informative id column
 
 Identified class imbalance (4700:209 → Yes:No)
 
-🧹 Data Preprocessing
+**🧹 Data Preprocessing**
+
 Applied label encoding to categorical features
 
 Converted all features to appropriate data types
@@ -50,10 +55,11 @@ Cleaned the bmi column and removed non-numeric values
 
 Addressed class imbalance via downsampling to balance positive/negative stroke cases
 
-🌟 Feature Selection with Boruta
+**🌟 Feature Selection with Boruta**
+
 Used the Boruta algorithm, a powerful wrapper around Random Forests, to determine the most predictive features.
 
-✅ Selected Features:
+**✅ Selected Features:**
 
 age, hypertension, heart_disease, ever_married, work_type, avg_glucose_level, bmi, smoking_status
 
@@ -63,10 +69,12 @@ gender, Residence_type
 
 These insights informed feature reduction for model simplicity and improved performance.
 
-🔀 Train-Test Splitting
+**🔀 Train-Test Splitting**
+
 Performed an 80/20 split using caTools::sample.split() for unbiased evaluation.
 
-🛠️ Preparing the Training Scheme
+**🛠️ Preparing the Training Scheme**
+
 Utilized caret::trainControl() to define a rigorous resampling strategy:
 
 r
@@ -87,7 +95,8 @@ Class probabilities allow probabilistic thresholding
 
 AUC, Sensitivity, Specificity used instead of plain accuracy—crucial for imbalanced data
 
-🧠 Model Building and Performance
+**🧠 Model Building and Performance**
+
 Trained and evaluated multiple models under the same cross-validation scheme:
 
 🧪 Model	🏆 AUC	✅ Accuracy	💡 Sensitivity	🔒 Specificity
@@ -100,7 +109,8 @@ Gradient Boosting (GBM)	Tuned	In Progress	In Progress	In Progress
 
 🏅 Best Performing: Logistic Regression (balanced metrics and high AUC)
 
-💻 Shiny Web Application
+**💻 Shiny Web Application**
+
 An intuitive, browser-based interface built with Shiny allows:
 
 Users to input health metrics and lifestyle habits
@@ -141,14 +151,16 @@ Data Scientist | ML Engineer | HealthTech Enthusiast
 📜 License
 This project is released under the MIT License.
 
-🧠 What This Project Demonstrates
+**🧠 What This Project Demonstrates**
+
 ✅ End-to-end ML pipeline: from raw data to live app
 ✅ Balanced model evaluation with medical impact in mind
 ✅ Feature selection & interpretability (Boruta)
 ✅ Cross-validation for reproducibility
 ✅ Hands-on deployment using Shiny
 
-🔥 Employers Take Note:
+**🔥 Employers Take Note:**
+
 This project exemplifies practical machine learning applied to a real-world healthcare problem, with emphasis on:
 
 Code readability
