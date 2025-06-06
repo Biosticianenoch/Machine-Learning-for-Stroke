@@ -1,0 +1,306 @@
+---
+title: "STROKE RISK PREDICTION"
+author: "Enock Bereka"
+date: "2025-05-25"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading necessary packages
+```{r message=FALSE, warning=FALSE}
+library(Boruta)
+library(caret)
+library(tidyverse)
+library(pROC)
+library(caTools)
+library(randomForest)
+```
+
+## Setting working directory
+```{r message=FALSE, warning=FALSE}
+setwd("C:/Users/ADMIN/Desktop/Stroke")
+```
+
+## Load the dataset
+```{r message=FALSE, warning=FALSE}
+data = read_csv("Stroke.csv")
+```
+
+## Assess the structure of the dataset
+```{r message=FALSE, warning=FALSE}
+glimpse(data)
+```
+
+## Checking for missing values
+```{r message=FALSE, warning=FALSE}
+anyNA(data)
+```
+
+## Checking for duplicates
+```{r message=FALSE, warning=FALSE}
+sum(duplicated(data)) 
+```
+
+## Data preprocessing
+## Label encoding of categorical values
+```{r message=FALSE, warning=FALSE}
+categorical_vars = c("gender", "ever_married", "work_type",
+                     "Residence_type","smoking_status")
+
+data = data %>% mutate(across(all_of(categorical_vars),~as.numeric(as.factor(.))-1))
+```
+
+## Convert categorival variables to factors
+```{r message=FALSE, warning=FALSE}
+data[categorical_vars] = lapply(data[categorical_vars], as.factor)
+
+data$bmi = as.numeric(data$bmi)
+
+#Remove NAs in BMI
+data = drop_na(data)
+```
+
+## Remove umnecessary columns
+```{r message=FALSE, warning=FALSE}
+data$id = NULL
+```
+
+## Converting stroke to binary
+```{r message=FALSE, warning=FALSE}
+data$stroke = ifelse(data$stroke == 0, "No", "Yes")
+data$stroke = as.factor(data$stroke)
+```
+
+## Checking the distribution of the study Outcome.
+```{r message=FALSE, warning=FALSE}
+table(data$stroke)#There is a class imbalance
+```
+
+## Handling class imbalance
+## Apply downsampling f the majority class
+```{r message=FALSE, warning=FALSE}
+data = downSample(x = data[, -11], y = data$stroke)
+table(data$Class)
+```
+
+## Feature important analysis
+```{r message=FALSE, warning=FALSE}
+boruta_results = Boruta(Class~., data)
+print(boruta_results)
+```
+
+## To Check only the confirmed attributes
+```{r message=FALSE, warning=FALSE}
+getSelectedAttributes(boruta_results, withTentative = TRUE)
+```
+
+## Remove the rejected Attributes
+```{r message=FALSE, warning=FALSE}
+data$gender = NULL
+data$Residence_type = NULL
+```
+
+## Splitting the data training and testing
+```{r message=FALSE, warning=FALSE}
+index = sample.split(data$Class,SplitRatio = 0.8)
+train_data = subset(data, index == "TRUE")
+testData = subset(data, index == "FALSE")
+table(train_data$Class)
+table(testData$Class)
+```
+
+## Prepare a training scheme
+```{r message=FALSE, warning=FALSE}
+fitcontrol = trainControl(method = "repeatedcv", 
+                          number = 10,
+                          repeats = 3,
+                          classProbs = TRUE,
+                          summaryFunction = twoClassSummary)
+```
+
+## Train the logistic regression model
+```{r message=FALSE, warning=FALSE}
+model = train(Class~., train_data, 
+              method = "glm",
+              metric = "ROC",
+              preProcess = c("center","scale"),
+              trControl = fitcontrol)
+```
+
+## Make predictions
+```{r message=FALSE, warning=FALSE}
+model_pred = predict(model,testData)
+```
+
+## Creating a confusion matrix
+```{r message=FALSE, warning=FALSE}
+cm = confusionMatrix(model_pred,testData$Class, positive = "Yes")
+cm
+```
+
+## ROC curve
+```{r message=FALSE, warning=FALSE}
+pred = predict(model, testData,
+               type = "prob")
+roc(testData$Class, pred$Yes)
+```
+
+## Impliment Decision Tree
+```{r message=FALSE, warning=FALSE}
+model_rpart = train(Class~.,
+                    train_data,
+                    method = "rpart",
+                    metric = "ROC",
+                    preProcess = c("center","scale"),
+                    trControl = fitcontrol)
+```
+
+## Make Predictions.
+```{r message=FALSE, warning=FALSE}
+pred1 = predict(model_rpart,testData)
+cm1 = confusionMatrix(pred1, testData$Class,
+                      positive = "Yes")
+cm1
+```
+
+## ROC curve.
+```{r message=FALSE, warning=FALSE}
+rocpred = predict(model_rpart,testData,
+                  type = "prob")
+roc(testData$Class,rocpred$Yes)
+```
+
+## Impliment Random Forest
+```{r message=FALSE, warning=FALSE}
+model_rf = train(Class~., train_data,
+                 method = "rf",
+                 metric = "ROC",
+                 preProcess = c("center", "scale"),
+                 trControl = fitcontrol)
+```
+
+## Make predictions.
+```{r message=FALSE, warning=FALSE}
+rf_pred = predict(model_rf, testData)
+
+Cm2 = confusionMatrix(rf_pred, testData$Class,
+                      positive = "Yes")
+Cm2
+```
+
+## ROc curve
+```{r message=FALSE, warning=FALSE}
+rocpred1 = predict(model_rf,testData,
+                   type = "prob")
+roc(testData$Class,rocpred1$Yes)
+```
+
+## Implement the Support vector machines
+```{r message=FALSE, warning=FALSE}
+model_svm = train(Class~., 
+                  train_data,
+                  method = "svmRadial",
+                  metric = "ROC",
+                  preProcess = c("center", "scale"),
+                  trControl = fitcontrol)
+```
+
+## Make Predictions
+```{r message=FALSE, warning=FALSE}
+pred3 = predict(model_svm, testData)
+cm3 = confusionMatrix(pred3, testData$Class, positive = "Yes")
+cm3
+```
+
+## ROC Curve
+```{r message=FALSE, warning=FALSE}
+rocpred2 = predict(model_svm, testData, type = "prob")
+roc(testData$Class, rocpred2$Yes)
+```
+
+## Implement the K-Nearest Neighbors
+```{r message=FALSE, warning=FALSE}
+model_knn = train(Class~., 
+                  train_data,
+                  method = "knn",
+                  metric = "ROC",
+                  preProcess = c("center", "scale"),
+                  trControl = fitcontrol)
+```
+
+## Making Predictions
+```{r message=FALSE, warning=FALSE}
+pred4 = predict(model_knn, testData)
+cm4 = confusionMatrix(testData$Class, pred4, positive = "Yes")
+cm4
+```
+
+## ROC Curve
+```{r message=FALSE, warning=FALSE}
+rocpred3 = predict(model_knn, testData, type = "prob")
+roc(testData$Class, rocpred3$Yes)
+```
+
+## Implement the Gradient Boosting Machines
+```{r message=FALSE, warning=FALSE}
+model_gbm = train(Class~.,
+                  train_data,
+                  method = "gbm",
+                  metric = "ROC",
+                  preProcess = c("center", "scale"),
+                  trControl = fitcontrol)
+```
+
+## Making Predictions
+```{r message=FALSE, warning=FALSE}
+pred5 = predict(model_gbm, testData)
+cm5 = confusionMatrix(testData$Class, pred5, positive = "Yes")
+cm5
+```
+
+## ROC CURVE
+```{r message=FALSE, warning=FALSE}
+rocpred4 = predict(model, testData, type = "prob")
+roc(testData$Class, rocpred4$Yes)
+```
+
+## Implementing Neural Networks
+```{r message=FALSE, warning=FALSE}
+model_neuro = train(Class~., 
+                    train_data,
+                    method = "glmnet",
+                    metric = "ROC",
+                    preProcess = c("center", "scale"),
+                    trControl = fitcontrol)
+```
+
+## Making Predictions
+```{r message=FALSE, warning=FALSE}
+pred6 = predict(model_neuro, testData)
+cm6 = confusionMatrix(testData$Class, pred6, positive = "Yes")
+cm
+```
+
+## ROC Curve
+```{r message=FALSE, warning=FALSE}
+rocpred5 = predict(model_neuro, testData, type = "prob")
+roc(testData$Class, rocpred5$Yes)
+```
+
+## Model Comparison
+```{r message=FALSE, warning=FALSE}
+model_list <- list(Logistic = model, Neural_Networks = model_neuro , 
+                   Decision_Trees = model_rpart, Random.Forest = model_rf,
+                   KNN = model_knn, SVM = model_svm, GBM = model_gbm)
+resamples <- resamples(model_list)
+bwplot(resamples, metric="ROC")
+```
+
+## Saving the best model
+```{r message=FALSE, warning=FALSE}
+saveRDS(model_neuro, "C:/Users/ADMIN/Desktop/Stroke/neuro_networks.model.rds")
+```
+
