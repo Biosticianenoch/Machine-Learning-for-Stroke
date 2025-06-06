@@ -118,7 +118,7 @@ fitcontrol = trainControl(
 | 🔍 Decision Tree       | 0.8053 | 73.8%    | 73.8%       | 73.8%       |
 | 🌀 SVM (Radial)        | 0.8163 | 73.8%    | 69.1%       | 78.6%       |
 | 🧩 K-Nearest Neighbors | 0.7333 | 67.9%    | 69.2%       | 66.7%       |
-| ⚡ GBM (in progress)   | *Tuned*| *Tuned*  | *Tuned*     | *Tuned*     |
+| ⚡ GBM (in progress)   | 0.823| 71.2%  | *72.3%     | 69.5%    |
 
 > 🥇 **Best Performer**: Logistic Regression (high AUC, simple and interpretable)
 
